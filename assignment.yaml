@@ -1,7 +1,7 @@
 ---
 # Apache webserver; Configure it to start at server boot, and listening on all interfaces on port 80;
 - name: This sets up a apache web server
-  hosts: localhost 
+  hosts: localhost  
   tasks:
   - name: Install apache packages 
     yum:
@@ -41,7 +41,32 @@
     service:
       name: firewalld
       state: restarted
+
 # MySQL database server;Configure it to start at server boot, and listening on all interfaces on port 3306
+  - name: Install MySQL
+    shell: sudo rpm -Uvh http://dev.mysql.com/get/mysql57-community-release-el6-7.noarch.rpm
+    ignore_errors: yes
+  - name: "Installing MySQL 5.7"
+    package: name=mysql-community-server state=present
+  - name: Start the MySQL service
+    become: true
+    service: 
+      name: mysqld
+      state: started
+      enabled: true
+  - name: Find MySQL root password
+    shell: "echo `grep 'temporary.*root@localhost' /var/log/mysqld.log | sed 's/.*root@localhost: //'`"
+    register: mysql_root_pass
+  - debug: var=mysql_root_pass.stdout
+  - name: Open port 3306 for http access
+    firewalld:
+      port: 3306/tcp
+      permanent: true
+      state: enabled
+  - name: Restart the firewalld service to load in the firewall changes
+    service:
+      name: firewalld
+      state: restarted
 
 # Telnet
   - name: install Telnet
