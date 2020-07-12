@@ -2,6 +2,9 @@
 # Apache webserver; Configure it to start at server boot, and listening on all interfaces on port 80;
 - name: This sets up a apache web server
   hosts: localhost  
+  vars:
+    jdk_url: http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-linux-x64
+    jdk_pkg: jdk-8u131-linux-x64
   tasks:
   - name: Install apache packages 
     yum:
@@ -87,5 +90,12 @@
       state: present
 
 #  Oracle JDK
+  - name: download oracle java
+    get_url:
+      url: "{{ jdk_url }}.rpm"
+      headers: 'Cookie: oraclelicense=accept-securebackup-cookie'
+      dest: "/var/tmp/{{ jdk_pkg }}.rpm"
+  - name: install oracle JDK
+    shell: "rpm --nodeps -ivh /var/tmp/{{ jdk_pkg }}.rpm"
 
 #  Disable firewalls on "ec2_devops" or allow ports 80, 8080, 3306 from anywhere to access the 3 services configured above;
